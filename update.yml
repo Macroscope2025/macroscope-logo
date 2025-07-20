@@ -2,9 +2,9 @@ name: Update Logo Daily
 
 on:
   schedule:
-    - cron: '0 17 * * 1-5'  # 6PM UK time (17:00 UTC)
+    - cron: '0 16 * * 1-5'  # 5PM UK time (16:00 UTC)
   workflow_dispatch:
-
+  
 jobs:
   update:
     runs-on: ubuntu-latest
