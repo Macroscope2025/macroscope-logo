@@ -1,31 +1,28 @@
 import yfinance as yf
-from datetime import datetime, timedelta
 import shutil
-
-# Config
-UP_IMAGE = "macroscope-green.png"
-DOWN_IMAGE = "macroscope-burgundy.png"
-OUTPUT_IMAGE = "logo.png"
-MARKET = "^GSPC"  # S&P 500
-
-def get_previous_market_close():
-    today = datetime.now()
-    offset = 1 if today.weekday() > 0 else 3  # Adjust for Monday (gets Friday)
-    prev_day = today - timedelta(days=offset)
-    return prev_day.strftime('%Y-%m-%d'), today.strftime('%Y-%m-%d')
-
-def is_market_up():
-    start, end = get_previous_market_close()
-    data = yf.download(MARKET, start=start, end=end)
-    if data.empty or "Close" not in data.columns:
-        raise ValueError("Market data unavailable")
-    close_values = data["Close"].values
-    return close_values[-1] > close_values[0]
+from datetime import datetime
 
 def update_logo():
-    source = UP_IMAGE if is_market_up() else DOWN_IMAGE
-    shutil.copyfile(source, OUTPUT_IMAGE)
-    print(f"Logo updated to {source}")
+    # Fetch last two days' market data for S&P 500
+    ticker = '^GSPC'
+    data = yf.download(ticker, period='2d')
+
+    if data.empty or len(data) < 2:
+        print("Not enough market data.")
+        return
+
+    yesterday_close = data['Close'][-2]
+    today_close = data['Close'][-1]
+
+    # Decide which logo to use based on market direction
+    if today_close >= yesterday_close:
+        # Market up or flat -> use green
+        shutil.copy('public/macroscope-green.png', 'public/logo.png')
+        print("Market is up or flat — using green logo.")
+    else:
+        # Market down -> use burgundy
+        shutil.copy('public/macroscope-burgundy.png', 'public/logo.png')
+        print("Market is down — using burgundy logo.")
 
 if __name__ == "__main__":
     update_logo()
