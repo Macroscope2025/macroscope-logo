@@ -1,24 +1,24 @@
-import os
+import datetime
+from flask import Response
 import base64
 
 def handler(request):
-    # Get the correct path to logo.png
-    logo_path = os.path.join(os.path.dirname(__file__), "..", "logo.png")
-    logo_path = os.path.abspath(logo_path)
+    now = datetime.datetime.now()
 
-    try:
-        with open(logo_path, "rb") as f:
-            encoded = base64.b64encode(f.read()).decode("utf-8")
-            return {
-                "statusCode": 200,
-                "headers": {
-                    "Content-Type": "image/png"
-                },
-                "body": encoded,
-                "isBase64Encoded": True
-            }
-    except Exception as e:
-        return {
-            "statusCode": 500,
-            "body": f"Error reading logo.png: {str(e)}"
-        }
+    # Adjust for UK time (UTC+1 during BST)
+    uk_hour = (now.hour + 1) % 24
+
+    # Choose logo based on time
+    if uk_hour < 17:  # Before 5 PM UK time
+        logo_path = "Macroscope-burgundy-logo.png"
+    else:
+        logo_path = "Macroscope-green-logo.png"
+
+    # Load and return the image
+    with open(logo_path, "rb") as f:
+        image_data = f.read()
+
+    return Response(
+        image_data,
+        content_type="image/png"
+    )
